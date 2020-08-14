@@ -39,7 +39,7 @@ def generate_redirects(app):
     in_suffix = app.config.source_suffix
     if isinstance(in_suffix, list):
         in_suffix = in_suffix[0]
-    if isinstance(in_suffix, dict):
+    elif isinstance(in_suffix, dict):
         logger.warning("app.config.source_suffix is a dictionary type. "
                  "Defaulting source_suffix to '.rst'")
         in_suffix = ".rst"
