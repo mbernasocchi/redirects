@@ -14,6 +14,7 @@ import os
 
 from sphinx.builders import html as builders
 from sphinx.builders import linkcheck as linkcheckbuilders
+from sphinx.util import logging
 
 TEMPLATE = """<html>
   <head><meta http-equiv="refresh" content="0; url=%s"/></head>
@@ -22,26 +23,27 @@ TEMPLATE = """<html>
 
 
 def generate_redirects(app):
+    logger = logging.getLogger(__name__)
 
     path = os.path.join(app.srcdir, app.config.redirects_file)
     if not os.path.exists(path):
-        app.info("Could not find redirects file at '%s'" % path)
+        logging.warning("Could not find redirects file at '%s'" % path)
         return
 
     in_suffix = app.config.source_suffix
     if isinstance(in_suffix, list):
         in_suffix = in_suffix[0]
     if isinstance(in_suffix, dict):
-        app.info("app.config.source_suffix is a dictionary type. "
+        logger.warning("app.config.source_suffix is a dictionary type. "
                  "Defaulting source_suffix to '.rst'")
         in_suffix = ".rst"
 
     if type(app.builder) == linkcheckbuilders.CheckExternalLinksBuilder:
-        app.info("Detected 'linkcheck' builder in use so skipping generating redirects")
+        logger.warning("Detected 'linkcheck' builder in use so skipping generating redirects")
         return
 
     if not (type(app.builder) == builders.StandaloneHTMLBuilder or type(app.builder) == builders.DirectoryHTMLBuilder):
-        app.warn("The 'sphinxcontib-redirects' plugin is only supported "
+        logger.warning("The 'sphinxcontib-redirects' plugin is only supported "
                  "by the 'html' and 'dirhtml' builder, but you are using '%s'. Skipping..." % type(app.builder))
 
     dirhtml = False
@@ -52,7 +54,7 @@ def generate_redirects(app):
         for line in redirects.readlines():
             from_path, to_path = line.rstrip().split(' ')
 
-            app.debug("Redirecting '%s' to '%s'" % (from_path, to_path))
+            logger.debug("Redirecting '%s' to '%s'" % (from_path, to_path))
 
             if dirhtml:
                 from_path = from_path.replace(in_suffix, '/index.html')
@@ -68,7 +70,7 @@ def generate_redirects(app):
                 len(from_path.split(os.path.sep)) - 1)
             to_path = to_path_prefix + to_path
 
-            app.debug("Resolved redirect '%s' to '%s'" % (from_path, to_path))
+            logger.debug("Resolved redirect '%s' to '%s'" % (from_path, to_path))
 
             redirected_filename = os.path.join(app.builder.outdir, from_path)
             redirected_directory = os.path.dirname(redirected_filename)
