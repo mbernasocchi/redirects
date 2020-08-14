@@ -17,7 +17,13 @@ from sphinx.builders import linkcheck as linkcheckbuilders
 from sphinx.util import logging
 
 TEMPLATE = """<html>
-  <head><meta http-equiv="refresh" content="0; url=%s"/></head>
+  <head><meta http-equiv="refresh" content="0; url={to_path}"/></head>
+  <body>
+  This page has moved. Redirecting...
+  <script>
+  window.location.href = '{to_path}' + (window.location.search || '') + (window.location.hash || '');
+  </script>
+  </body>
 </html>
 """
 
@@ -78,9 +84,10 @@ def generate_redirects(app):
                 os.makedirs(redirected_directory)
 
             with open(redirected_filename, 'w') as f:
-                f.write(TEMPLATE % to_path)
+                f.write(TEMPLATE.format(to_path=to_path))
 
 
 def setup(app):
     app.add_config_value('redirects_file', 'redirects', 'env')
     app.connect('builder-inited', generate_redirects)
+
